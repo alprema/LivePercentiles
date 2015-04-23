@@ -130,7 +130,7 @@ namespace LivePercentiles.Tests
             var random = new Random();
             var builder = new NaiveBuilder();
             for (var i = 0; i < 1000000; ++i)
-                builder.AddValue(random.NextDouble() * 99 + 1);
+                builder.AddValue(random.NextDouble() * 100);
 
             var percentiles = builder.GetPercentiles().ToList();
 
@@ -138,7 +138,7 @@ namespace LivePercentiles.Tests
             for (var i = 0; i < 9; ++i)
             {
                 var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
-                deltaToPercentile.ShouldBeLessThan(1);
+                deltaToPercentile.ShouldBeLessThan(0.1);
             }
         }
     }

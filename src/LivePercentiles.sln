@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LivePercentiles", "LivePercentiles\LivePercentiles.csproj", "{B8A85134-3950-4AFF-B74F-D59BD2E4C807}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LivePercentiles.Tests", "LivePercentiles.Tests\LivePercentiles.Tests.csproj", "{F029AC85-C8C8-4A04-9C07-02F50B2440A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B8A85134-3950-4AFF-B74F-D59BD2E4C807}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8A85134-3950-4AFF-B74F-D59BD2E4C807}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8A85134-3950-4AFF-B74F-D59BD2E4C807}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8A85134-3950-4AFF-B74F-D59BD2E4C807}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F029AC85-C8C8-4A04-9C07-02F50B2440A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F029AC85-C8C8-4A04-9C07-02F50B2440A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F029AC85-C8C8-4A04-9C07-02F50B2440A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F029AC85-C8C8-4A04-9C07-02F50B2440A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

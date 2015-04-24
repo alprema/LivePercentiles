@@ -1,9 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace LivePercentiles
 {
+    /// <summary>
+    /// Implementation using the P² algorithm described in 
+    /// Jain & Chlamtac's 1985 paper.
+    /// The resulting percentiles are estimates but the input
+    /// data is not stored, resulting in a very small memory
+    /// footprint.
+    /// (cf. http://www.cse.wustl.edu/~jain/papers/ftp/psqr.pdf)
+    /// </summary>
     public class PsquareBuilder : IPercentileBuilder
     {
         private bool _isInitialized;
@@ -14,7 +24,7 @@ namespace LivePercentiles
 
         public PsquareBuilder(double[] desiredPercentiles = null)
         {
-            _desiredPercentiles = desiredPercentiles;
+            _desiredPercentiles = desiredPercentiles ?? Constants.DefaultPercentiles;
         }
 
         public void AddValue(double value)
@@ -46,20 +56,37 @@ namespace LivePercentiles
             throw new NotImplementedException("Implement normal phase");
         }
 
+        internal double ComputePsquareForMarker(ref Marker previousMarker, ref Marker currentMarker, ref Marker nextMarker, int markerShift)
+        {
+            var ratioBetweenPreviousAndNextPosition = (double)markerShift / (nextMarker.Position - previousMarker.Position);
+            var distanceBetweenPreviousAndNewPosition = currentMarker.Position - previousMarker.Position + markerShift;
+            var differenceBetweenNextAndCurrentValue = nextMarker.Value - currentMarker.Value;
+            var differenceBetweenNextAndCurrentPosition = nextMarker.Position - currentMarker.Position;
+            var distanceBetweenNextAndNewPosition = nextMarker.Position - currentMarker.Position - markerShift;
+            var differenceBetweenPreviousAndCurrentValue = currentMarker.Value - previousMarker.Value;
+            var differenceBetweenPreviousAndCurrentPosition = currentMarker.Position - previousMarker.Position;
+
+            return currentMarker.Value
+                   + ratioBetweenPreviousAndNextPosition
+                   * (distanceBetweenPreviousAndNewPosition * (differenceBetweenNextAndCurrentValue / differenceBetweenNextAndCurrentPosition)
+                      + distanceBetweenNextAndNewPosition * (differenceBetweenPreviousAndCurrentValue / differenceBetweenPreviousAndCurrentPosition));
+
+        }
+
         public IEnumerable<Percentile> GetPercentiles()
         {
             throw new System.NotImplementedException();
         }
     }
-
+    
     internal struct Marker
     {
-        public int CurrentPosition;
+        public int Position;
         public double Value;
 
-        public Marker(int currentPosition, double value)
+        public Marker(int position, double value)
         {
-            CurrentPosition = currentPosition;
+            Position = position;
             Value = value;
         }
     }

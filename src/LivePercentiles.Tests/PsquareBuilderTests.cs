@@ -142,9 +142,17 @@ namespace LivePercentiles.Tests
         }
 
         [Test]
-        public void test_behavior_when_there_are_as_many_observations_as_requested_percentiles()
+        public void should_recompute_marker_using_the_psquare_formula()
         {
-            throw new NotImplementedException();
+            // Using the example data of Jain & Chlamtac's paper to verify the implementation
+            var builder = new PsquareBuilder();
+            var previous = new Marker(3, 0.74);
+            var current = new Marker(4, 0.83);
+            var next = new Marker(7, 22.37);
+
+            var newMarkerValue = builder.ComputePsquareForMarker(ref previous, ref current, ref next, 1);
+
+            newMarkerValue.ShouldEqual(4.465);
         }
     }
 }

@@ -133,6 +133,7 @@ namespace LivePercentiles.Tests
 
             var percentiles = builder.GetPercentiles().ToList();
 
+            Console.WriteLine(string.Join(", ", percentiles));
             // TODO: Use MSE to evaluate accuracy ?
             for (var i = 0; i < 9; ++i)
             {

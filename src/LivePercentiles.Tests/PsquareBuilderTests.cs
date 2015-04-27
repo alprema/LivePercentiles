@@ -12,7 +12,7 @@ namespace LivePercentiles.Tests
         {
             public string Note { get; set; }
             public double[] Values { get; set; }
-            public double[] DesiredPercentiles { get; set; }
+            public int DesiredNumberOfBuckets { get; set; }
             public Percentile[] ExpectedPercentiles { get; set; }
 
             public override string ToString()
@@ -23,90 +23,91 @@ namespace LivePercentiles.Tests
 
         private readonly Expectation[] _testExpectations =
         {
-            new Expectation
-            {
-                Note = "Basic data",
-                DesiredPercentiles = Constants.DefaultPercentiles,
-                Values = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(10, 1.5),
-                    new Percentile(20, 2.5),
-                    new Percentile(30, 3.5),
-                    new Percentile(40, 4.5),
-                    new Percentile(50, 5.5),
-                    new Percentile(60, 6.5),
-                    new Percentile(70, 7.5),
-                    new Percentile(80, 8.5),
-                    new Percentile(90, 9.5)
-                }
-            },
-            new Expectation
-            {
-                Note = "Wikipedia Linear Interpolation Between Closest Ranks example",
-                DesiredPercentiles = new double[] { 5, 30, 40, 95 },
-                Values = new double[] { 15, 20, 35, 40, 50 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(5, 15),
-                    new Percentile(30, 20),
-                    new Percentile(40, 27.5),
-                    new Percentile(95, 50)
-                }
-            },
-            new Expectation
-            {
-                Note = "Negative percentile",
-                DesiredPercentiles = new double[] { -5 },
-                Values = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(-5, 1)
-                }
-            },
-            new Expectation
-            {
-                Note = "Lower than one percentile",
-                DesiredPercentiles = new [] { 0.2 },
-                Values = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(0.2, 1)
-                }
-            },
-            new Expectation
-            {
-                Note = "More than 100 percentiles",
-                DesiredPercentiles = Enumerable.Range(1, 99).Select(i => (double)i).Concat(new [] { 99.9, 99.99 }).ToArray(),
-                Values = Enumerable.Range(1, 100).Select(i => (double)i).ToArray(),
-                ExpectedPercentiles = Enumerable.Range(1, 99).Select(p => new Percentile(p, p + 0.5)).Concat(new [] { new Percentile(99.9, 100), new Percentile(99.99, 100) }).ToArray(),
-            },
-            new Expectation
-            {
-                Note = "Only one value",
-                DesiredPercentiles = new double[] { 70 },
-                Values = new double[] { 1 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(70, 1)
-                }
-            },
-            new Expectation
-            {
-                Note = "Two values",
-                DesiredPercentiles = new double[] { 50 },
-                Values = new double[] { 1, 2 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(50, 1.5)
-                }
-            },
+            // TODO: Add a safety to handle >100 percentiles
+//            new Expectation
+//            {
+//                Note = "More than 100 percentiles",
+//                DesiredNumberOfBuckets = 100,
+//                Values = Enumerable.Range(1, 100).Select(i => (double)i).ToArray(),
+//                ExpectedPercentiles = Enumerable.Range(1, 99).Select(p => new Percentile(p, p + 0.5)).Concat(new [] { new Percentile(99.9, 100), new Percentile(99.99, 100) }).ToArray(),
+//            },
+            // TODO
+//            new Expectation
+//            {
+//                Note = "Only two buckets",
+//                DesiredNumberOfBuckets = 2,
+//                Values = new double[] { 1 },
+//                ExpectedPercentiles = new[]
+//                {
+//                    new Percentile(70, 1)
+//                }
+//            },
             new Expectation
             {
                 Note = "No data",
-                DesiredPercentiles = new double[] { 50 },
+                DesiredNumberOfBuckets = Constants.DefaultBucketCount,
                 Values = new double[] { },
                 ExpectedPercentiles = new Percentile[0]
+            },
+            new Expectation
+            {
+                Note = "Jain & Chlamtac's paper example - Step 5",
+                DesiredNumberOfBuckets = 4,
+                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(25, 0.15),
+                    new Percentile(50, 0.74),
+                    new Percentile(75, 0.83)
+                }
+            },
+            new Expectation
+            {
+                Note = "Jain & Chlamtac's paper example - Step 6",
+                DesiredNumberOfBuckets = 4,
+                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(25, 0.15),
+                    new Percentile(50, 0.74),
+                    new Percentile(75, 0.83)
+                }
+            },
+            new Expectation
+            {
+                Note = "Jain & Chlamtac's paper example - Step 7",
+                DesiredNumberOfBuckets = 4,
+                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(25, 0.15),
+                    new Percentile(50, 0.74),
+                    new Percentile(75, 4.46)
+                }
+            },
+            new Expectation
+            {
+                Note = "Jain & Chlamtac's paper example - Step 13",
+                DesiredNumberOfBuckets = 4,
+                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15, 15.43, 38.62, 15.92, 34.60, 10.28, 1.47 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(25, 2.13),
+                    new Percentile(50, 9.27),
+                    new Percentile(75, 21.57)
+                }
+            },
+            new Expectation
+            {
+                Note = "Jain & Chlamtac's paper example - Step 20",
+                DesiredNumberOfBuckets = 4,
+                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15, 15.43, 38.62, 15.92, 34.60, 10.28, 1.47, 0.40, 0.05, 11.39, 0.27, 0.42, 0.09, 11.37 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(25, 0.49),
+                    new Percentile(50, 4.44),
+                    new Percentile(75, 17.2)
+                }
             }
         };
 
@@ -114,30 +115,32 @@ namespace LivePercentiles.Tests
         [TestCaseSource("_testExpectations")]
         public void should_return_percentiles_for_given_data(Expectation expectation)
         {
-            var builder = new PsquareBuilder(expectation.DesiredPercentiles);
-            foreach (var datum in expectation.Values.Shuffle().ToArray())
+            var builder = new PsquareHistogramAlgorithmBuilder(expectation.DesiredNumberOfBuckets);
+            foreach (var datum in expectation.Values.ToArray())
                 builder.AddValue(datum);
 
             var percentiles = builder.GetPercentiles().ToList();
 
-            percentiles.ShouldBeEquivalentTo(expectation.ExpectedPercentiles, true);
+            var roundedPercentiles = percentiles.Select(p => new Percentile(p.Rank, Math.Round(p.Value, 2))).ToList();
+            roundedPercentiles.ShouldBeEquivalentTo(expectation.ExpectedPercentiles, true);
         }
 
         [Test]
         public void should_work_with_random_uniform_distribution()
         {
             var random = new Random();
-            var builder = new PsquareBuilder();
+            var builder = new PsquareHistogramAlgorithmBuilder();
             for (var i = 0; i < 1000000; ++i)
                 builder.AddValue(random.NextDouble() * 100);
 
             var percentiles = builder.GetPercentiles().ToList();
 
             // TODO: Use MSE to evaluate accuracy ?
+            Console.WriteLine(string.Join(", ", percentiles));
             for (var i = 0; i < 9; ++i)
             {
                 var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
-                deltaToPercentile.ShouldBeLessThan(0.1);
+                deltaToPercentile.ShouldBeLessThan(0.15);
             }
         }
 
@@ -145,14 +148,43 @@ namespace LivePercentiles.Tests
         public void should_recompute_marker_using_the_psquare_formula()
         {
             // Using the example data of Jain & Chlamtac's paper to verify the implementation
-            var builder = new PsquareBuilder();
-            var previous = new Marker(3, 0.74);
-            var current = new Marker(4, 0.83);
-            var next = new Marker(7, 22.37);
+            var previous = new Marker(3, 0.74, double.NaN);
+            var current = new Marker(4, 0.83, double.NaN);
+            var next = new Marker(7, 22.37, double.NaN);
 
-            var newMarkerValue = builder.ComputePsquareForMarker(ref previous, ref current, ref next, 1);
+            var newMarkerValue = PsquareHistogramAlgorithmBuilder.ComputePsquareValueForMarker(previous, current, next, 1);
 
             newMarkerValue.ShouldEqual(4.465);
+        }
+
+        [Test]
+        public void should_throw_with_one_bucket()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void throw_if_not_enough_observations()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void performance_test()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void should_handle_more_than_int_maxvalue_observations()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Test]
+        public void should_handle_negative_number_of_buckets()
+        {
+            throw new NotImplementedException();
         }
     }
 }

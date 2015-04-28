@@ -23,25 +23,13 @@ namespace LivePercentiles.Tests
 
         private readonly Expectation[] _testExpectations =
         {
-            // TODO: Add a safety to handle >100 percentiles
-//            new Expectation
-//            {
-//                Note = "More than 100 percentiles",
-//                DesiredNumberOfBuckets = 100,
-//                Values = Enumerable.Range(1, 100).Select(i => (double)i).ToArray(),
-//                ExpectedPercentiles = Enumerable.Range(1, 99).Select(p => new Percentile(p, p + 0.5)).Concat(new [] { new Percentile(99.9, 100), new Percentile(99.99, 100) }).ToArray(),
-//            },
-            // TODO
-//            new Expectation
-//            {
-//                Note = "Only two buckets",
-//                DesiredNumberOfBuckets = 2,
-//                Values = new double[] { 1 },
-//                ExpectedPercentiles = new[]
-//                {
-//                    new Percentile(70, 1)
-//                }
-//            },
+            new Expectation
+            {
+                Note = "More than 100 percentiles",
+                DesiredNumberOfBuckets = 200,
+                Values = Enumerable.Range(0, 201).Select(i => (double)i).ToArray(),
+                ExpectedPercentiles = Enumerable.Range(1, 199).Select(i => new Percentile(i / 2d, i)).ToArray(),
+            },
             new Expectation
             {
                 Note = "No data",
@@ -158,33 +146,48 @@ namespace LivePercentiles.Tests
         }
 
         [Test]
-        public void should_throw_with_one_bucket()
+        public void should_throw_with_fewer_than_three_buckets()
         {
-            throw new NotImplementedException();
+            Assert.That(() => new PsquareHistogramAlgorithmBuilder(3),
+                        Throws.InstanceOf<ArgumentException>().With.Message.EqualTo("At least four buckets should be provided to obtain meaningful estimates.\r\nParameter name: bucketCount"));
         }
 
         [Test]
-        public void throw_if_not_enough_observations()
+        public void should_return_no_percentiles_if_there_is_not_enough_data()
         {
-            throw new NotImplementedException();
+            var builder = new PsquareHistogramAlgorithmBuilder();
+
+            var percentiles = builder.GetPercentiles().ToList();
+
+            percentiles.Count.ShouldEqual(0);
         }
 
         [Test]
+        [Ignore]
         public void performance_test()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Todo");
         }
 
         [Test]
+        [Ignore]
         public void should_handle_more_than_int_maxvalue_observations()
         {
-            throw new NotImplementedException();
-        }
-
-        [Test]
-        public void should_handle_negative_number_of_buckets()
-        {
-            throw new NotImplementedException();
+            // TODO
+//            var random = new Random();
+//            var builder = new PsquareHistogramAlgorithmBuilder();
+//            for (long i = 0; i < int.MaxValue + 1L; ++i)
+//                builder.AddValue(random.NextDouble() * 100);
+//
+//            var percentiles = builder.GetPercentiles().ToList();
+//
+//            // TODO: Use MSE to evaluate accuracy ?
+//            Console.WriteLine(string.Join(", ", percentiles));
+//            for (var i = 0; i < 9; ++i)
+//            {
+//                var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
+//                deltaToPercentile.ShouldBeLessThan(0.15);
+//            }
         }
     }
 }

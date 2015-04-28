@@ -27,6 +27,8 @@ namespace LivePercentiles
         
         public PsquareHistogramAlgorithmBuilder(int bucketCount = Constants.DefaultBucketCount)
         {
+            if (bucketCount < 4)
+                throw new ArgumentException("At least four buckets should be provided to obtain meaningful estimates.", "bucketCount");
             _bucketCount = bucketCount;
             _desiredPercentiles = Enumerable.Range(1, _bucketCount - 1).Select(i => 100d / _bucketCount * i).ToArray();
         }

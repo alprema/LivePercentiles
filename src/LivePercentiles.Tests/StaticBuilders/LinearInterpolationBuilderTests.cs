@@ -1,12 +1,13 @@
-﻿using System;
-using System.Linq;
+﻿using LivePercentiles.StaticBuilders;
 using LivePercentiles.Tests.Extensions;
 using NUnit.Framework;
+using System;
+using System.Linq;
 
-namespace LivePercentiles.Tests
+namespace LivePercentiles.Tests.StaticBuilders
 {
     [TestFixture]
-    public class NaiveBuilderTests
+    public class LinearInterpolationBuilderTests
     {
         public class Expectation
         {
@@ -114,7 +115,7 @@ namespace LivePercentiles.Tests
         [TestCaseSource("_testExpectations")]
         public void should_return_percentiles_for_given_data(Expectation expectation)
         {
-            var builder = new NaiveBuilder(expectation.DesiredPercentiles);
+            var builder = new LinearInterpolationBuilder(expectation.DesiredPercentiles);
             foreach (var datum in expectation.Values.Shuffle().ToArray())
                 builder.AddValue(datum);
 
@@ -127,14 +128,13 @@ namespace LivePercentiles.Tests
         public void should_work_with_random_uniform_distribution()
         {
             var random = new Random();
-            var builder = new NaiveBuilder();
+            var builder = new LinearInterpolationBuilder();
             for (var i = 0; i < 1000000; ++i)
                 builder.AddValue(random.NextDouble() * 100);
 
             var percentiles = builder.GetPercentiles().ToList();
 
             Console.WriteLine(string.Join(", ", percentiles));
-            // TODO: Use MSE to evaluate accuracy ?
             for (var i = 0; i < 9; ++i)
             {
                 var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);

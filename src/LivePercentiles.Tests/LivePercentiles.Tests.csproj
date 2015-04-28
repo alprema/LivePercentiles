@@ -47,18 +47,33 @@
   <ItemGroup>
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
-    <Compile Include="PsquareBuilderTests.cs" />
+    <Compile Include="StaticBuilders\NearestRankBuilderTests.cs" />
+    <Compile Include="StreamingBuilders\PsquareHistogramAlgorithmBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NaiveBuilderTests.cs" />
+    <Compile Include="StaticBuilders\LinearInterpolationBuilderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TestData\sample_data_100">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\sample_data_1000">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\sample_data_10000">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LivePercentiles\LivePercentiles.csproj">
       <Project>{B8A85134-3950-4AFF-B74F-D59BD2E4C807}</Project>
       <Name>LivePercentiles</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestData\sample_data_10000_expected_percentiles.txt" />
+    <Content Include="TestData\sample_data_1000_expected_percentiles.txt" />
+    <Content Include="TestData\sample_data_100_expected_percentiles.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LivePercentiles
+namespace LivePercentiles.StreamingBuilders
 {
     /// <summary>
     /// Implementation using the P² histogram algorithm described in 

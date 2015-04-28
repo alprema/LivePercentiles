@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace LivePercentiles
+namespace LivePercentiles.StaticBuilders
 {
     /// <summary>
-    /// Naive implementation used as a reference, should not be used
+    /// Simple implementation used as a reference, should not be used
     /// for streaming data since it actually stores all the data.
     /// The method used is Linear Interpolation Between Closest Ranks
     /// (cf. http://en.wikipedia.org/wiki/Percentile)
     /// </summary>
-    public class NaiveBuilder : IPercentileBuilder
+    public class LinearInterpolationBuilder : IPercentileBuilder
     {
         private readonly double[] _desiredPercentiles;
-        private List<double> _values = new List<double>();
+        private readonly List<double> _values = new List<double>();
 
-        public NaiveBuilder(double[] desiredPercentiles = null)
+        public LinearInterpolationBuilder(double[] desiredPercentiles = null)
         {
             _desiredPercentiles = desiredPercentiles ?? Constants.DefaultPercentiles;
         }

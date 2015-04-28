@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
+using LivePercentiles.StreamingBuilders;
 using LivePercentiles.Tests.Extensions;
 using NUnit.Framework;
 
-namespace LivePercentiles.Tests
+namespace LivePercentiles.Tests.StreamingBuilders
 {
     [TestFixture]
-    public class PsquareBuilderTests
+    public class PsquareHistogramAlgorithmBuilderTests
     {
         public class Expectation
         {
@@ -161,7 +162,7 @@ namespace LivePercentiles.Tests
 
             percentiles.Count.ShouldEqual(0);
         }
-
+        
         [Test]
         [Ignore]
         public void performance_test()

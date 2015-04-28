@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using LivePercentiles.StaticBuilders;
 using LivePercentiles.Tests.Extensions;
@@ -15,10 +17,7 @@ namespace LivePercentiles.Tests.StaticBuilders
             public double[] DesiredPercentiles { get; set; }
             public Percentile[] ExpectedPercentiles { get; set; }
 
-            public override string ToString()
-            {
-                return Note;
-            }
+            public override string ToString() { return Note; }
         }
 
         private readonly Expectation[] _testExpectations =
@@ -166,5 +165,35 @@ namespace LivePercentiles.Tests.StaticBuilders
                 deltaToPercentile.ShouldBeLessThan(0.1);
             }
         }
-    } 
+
+        public class SampleFile
+        {
+            public string Filename { get; set; }
+            public int[] ExpectedValues { get; set; }
+
+            public override string ToString() { return Filename; }
+        }
+
+        private SampleFile[] _sampleFiles =
+        {
+            new SampleFile { Filename = "TestData/sample_data_100", ExpectedValues = new[] { 73, 80, 125, 269, 269, 269 } },
+            new SampleFile { Filename = "TestData/sample_data_1000", ExpectedValues = new[] { 75, 82, 183, 320, 659, 659 } },
+            new SampleFile { Filename = "TestData/sample_data_10000", ExpectedValues = new[] { 75, 82, 177, 342, 551, 603 } }
+        };
+
+        [Test]
+        [TestCaseSource("_sampleFiles")]
+        public void should_work_with_sample_data(SampleFile sampleFile)
+        {
+            var builder = new NearestRankBuilder(new [] { 80, 90, 99, 99.9, 99.99, 99.999 });
+            
+            foreach (var line in File.ReadAllLines(sampleFile.Filename))
+            {
+                var value = double.Parse(line, CultureInfo.InvariantCulture);
+                builder.AddValue(value);
+            }
+
+            builder.GetPercentiles().Select(p => (int) p.Value).ShouldBeEquivalentTo(sampleFile.ExpectedValues);
+        }
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -158,12 +159,16 @@ namespace LivePercentiles.Tests.StaticBuilders
 
             var percentiles = builder.GetPercentiles().ToList();
 
-            Console.WriteLine(string.Join(", ", percentiles));
+            Console.WriteLine("Nearest rank");
+            var squaredErrors = new List<double>();
             for (var i = 0; i < 9; ++i)
             {
                 var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
                 deltaToPercentile.ShouldBeLessThan(0.1);
+                Console.WriteLine("[" + percentiles[i].Rank + "] => " + percentiles[i].Value + " (" + deltaToPercentile + ")");
+                squaredErrors.Add(Math.Pow(deltaToPercentile, 2));
             }
+            Console.WriteLine("MSE: " + squaredErrors.Average());
         }
 
         public class SampleFile

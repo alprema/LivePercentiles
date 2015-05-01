@@ -18,7 +18,6 @@ namespace LivePercentiles.StreamingBuilders
     public class PsquareHistogramAlgorithmBuilder : BasePsquareBuilder, IPercentileBuilder
     {
         private readonly int _bucketCount;
-        
         private readonly double[] _desiredPercentiles;
         
         public PsquareHistogramAlgorithmBuilder(int bucketCount = Constants.DefaultBucketCount)

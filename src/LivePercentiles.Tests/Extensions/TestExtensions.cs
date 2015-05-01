@@ -29,6 +29,38 @@ namespace LivePercentiles.Tests.Extensions
             return arg2;
         }
 
+        public static void ShouldBeEmpty(this IEnumerable collection)
+        {
+            Assert.That(collection, Is.Empty);
+        }
+
+        public static void ShouldNotBeEmpty(this IEnumerable collection)
+        {
+            Assert.That(collection, Is.Not.Empty);
+        }
+
+        public static void ShouldHaveSamePropertiesAs(this object actual, object expected, params string[] ignoredProperties)
+        {
+            var comparer = CreateComparer();
+            comparer.Config.MembersToIgnore.AddRange(ignoredProperties);
+
+            var result = comparer.Compare(actual, expected);
+            if (!result.AreEqual)
+                Assert.Fail("Properties should be equal, invalid properties: " + result.DifferencesString);
+        }
+
+        private static CompareLogic CreateComparer()
+        {
+            return new CompareLogic
+            {
+                Config =
+                {
+                    CompareStaticProperties = false,
+                    CompareStaticFields = false,
+                }
+            };
+        }
+
         public static void ShouldBeEquivalentTo(this IEnumerable collection, IEnumerable expected, bool compareDeeply = false)
         {
             if (compareDeeply)

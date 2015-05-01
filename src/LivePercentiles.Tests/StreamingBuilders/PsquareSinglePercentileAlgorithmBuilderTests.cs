@@ -8,14 +8,14 @@ using NUnit.Framework;
 namespace LivePercentiles.Tests.StreamingBuilders
 {
     [TestFixture]
-    public class PsquareHistogramAlgorithmBuilderTests
+    public class PsquareSinglePercentileAlgorithmBuilderTests
     {
         public class Expectation
         {
             public string Note { get; set; }
             public double[] Values { get; set; }
-            public int DesiredNumberOfBuckets { get; set; }
-            public Percentile[] ExpectedPercentiles { get; set; }
+            public double DesiredPercentile { get; set; }
+            public Percentile ExpectedPercentile { get; set; }
 
             public override string ToString()
             {
@@ -27,77 +27,52 @@ namespace LivePercentiles.Tests.StreamingBuilders
         {
             new Expectation
             {
+                Note = "Other than 50th percentile",
+                DesiredPercentile = 95,
+                Values = Enumerable.Range(0, 100).Select(i => (double)i).ToArray(),
+                ExpectedPercentile = new Percentile(95, 94),
+            },
+            new Expectation
+            {
                 Note = "More than 100 percentiles",
-                DesiredNumberOfBuckets = 200,
+                DesiredPercentile = 95,
                 Values = Enumerable.Range(0, 201).Select(i => (double)i).ToArray(),
-                ExpectedPercentiles = Enumerable.Range(1, 199).Select(i => new Percentile(i / 2d, i)).ToArray(),
+                ExpectedPercentile = new Percentile(95, 190),
             },
             new Expectation
             {
                 Note = "No data",
-                DesiredNumberOfBuckets = Constants.DefaultBucketCount,
+                DesiredPercentile = 50,
                 Values = new double[] { },
-                ExpectedPercentiles = new Percentile[0]
+                ExpectedPercentile = null
             },
             new Expectation
             {
                 Note = "Jain & Chlamtac's paper example - Step 5",
-                DesiredNumberOfBuckets = 4,
+                DesiredPercentile = 50,
                 Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(25, 0.15),
-                    new Percentile(50, 0.74),
-                    new Percentile(75, 0.83)
-                }
-            },
-            new Expectation
-            {
-                Note = "Jain & Chlamtac's paper example - Step 6",
-                DesiredNumberOfBuckets = 4,
-                Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(25, 0.15),
-                    new Percentile(50, 0.74),
-                    new Percentile(75, 0.83)
-                }
+                ExpectedPercentile = new Percentile(50, 0.74)
             },
             new Expectation
             {
                 Note = "Jain & Chlamtac's paper example - Step 7",
-                DesiredNumberOfBuckets = 4,
+                DesiredPercentile = 50,
                 Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(25, 0.15),
-                    new Percentile(50, 0.74),
-                    new Percentile(75, 4.46)
-                }
+                ExpectedPercentile = new Percentile(50, 0.74)
             },
             new Expectation
             {
                 Note = "Jain & Chlamtac's paper example - Step 13",
-                DesiredNumberOfBuckets = 4,
+                DesiredPercentile = 50,
                 Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15, 15.43, 38.62, 15.92, 34.60, 10.28, 1.47 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(25, 2.13),
-                    new Percentile(50, 9.27),
-                    new Percentile(75, 21.57)
-                }
+                ExpectedPercentile = new Percentile(50, 9.27)
             },
             new Expectation
             {
                 Note = "Jain & Chlamtac's paper example - Step 20",
-                DesiredNumberOfBuckets = 4,
+                DesiredPercentile = 50,
                 Values = new [] { 0.02, 0.15, 0.74, 3.39, 0.83, 22.37, 10.15, 15.43, 38.62, 15.92, 34.60, 10.28, 1.47, 0.40, 0.05, 11.39, 0.27, 0.42, 0.09, 11.37 },
-                ExpectedPercentiles = new[]
-                {
-                    new Percentile(25, 0.49),
-                    new Percentile(50, 4.44),
-                    new Percentile(75, 17.2)
-                }
+                ExpectedPercentile = new Percentile(50, 4.44)
             }
         };
 
@@ -105,31 +80,38 @@ namespace LivePercentiles.Tests.StreamingBuilders
         [TestCaseSource("_testExpectations")]
         public void should_return_percentiles_for_given_data(Expectation expectation)
         {
-            var builder = new PsquareHistogramAlgorithmBuilder(expectation.DesiredNumberOfBuckets);
+            var builder = new PsquareSinglePercentileAlgorithmBuilder(expectation.DesiredPercentile, Precision.LessPreciseAndFaster);
             foreach (var datum in expectation.Values.ToArray())
                 builder.AddValue(datum);
 
             var percentiles = builder.GetPercentiles().ToList();
 
-            var roundedPercentiles = percentiles.Select(p => new Percentile(p.Rank, Math.Round(p.Value, 2))).ToList();
-            roundedPercentiles.ShouldBeEquivalentTo(expectation.ExpectedPercentiles, true);
+            if (expectation.ExpectedPercentile == null)
+            {
+                percentiles.ShouldBeEmpty();
+                return;
+            }
+            Math.Round(percentiles.Single().Value, 2).ShouldEqual(expectation.ExpectedPercentile.Value);
         }
 
         [Test]
         public void should_work_with_random_uniform_distribution()
         {
+            const Precision precision = Precision.LessPreciseAndFaster;
+            var basicPercentiles = new [] { 10, 20, 30, 40, 50, 60, 70, 80, 90 };
             var random = new Random();
-            var builder = new PsquareHistogramAlgorithmBuilder();
+            var builders = basicPercentiles.Select(x => new PsquareSinglePercentileAlgorithmBuilder(x, precision)).ToList();
             for (var i = 0; i < 1000000; ++i)
-                builder.AddValue(random.NextDouble() * 100);
+                foreach (var builder in builders)
+                    builder.AddValue(random.NextDouble() * 100);
 
-            var percentiles = builder.GetPercentiles().ToList();
+            var percentiles = builders.Select(b => b.GetPercentiles().Single()).ToList();
 
-            Console.WriteLine("P² histogram");
+            Console.WriteLine("P² single (" + precision + ")");
             var squaredErrors = new List<double>();
             for (var i = 0; i < 9; ++i)
             {
-                var deltaToPercentile = Math.Abs(percentiles[i].Value - ((i + 1) * 10));
+                var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
                 deltaToPercentile.ShouldBeLessThan(0.15);
                 Console.WriteLine("[" + percentiles[i].Rank + "] => " + percentiles[i].Value + " (" + deltaToPercentile + ")");
                 squaredErrors.Add(Math.Pow(deltaToPercentile, 2));
@@ -138,16 +120,16 @@ namespace LivePercentiles.Tests.StreamingBuilders
         }
 
         [Test]
-        public void should_throw_with_fewer_than_three_buckets()
+        public void should_throw_with_negative_percentile()
         {
-            Assert.That(() => new PsquareHistogramAlgorithmBuilder(3),
-                        Throws.InstanceOf<ArgumentException>().With.Message.EqualTo("At least four buckets should be provided to obtain meaningful estimates.\r\nParameter name: bucketCount"));
+            Assert.That(() => new PsquareSinglePercentileAlgorithmBuilder(-3),
+                        Throws.InstanceOf<ArgumentException>().With.Message.EqualTo("Only positive percentiles are allowed.\r\nParameter name: desiredPercentile"));
         }
 
         [Test]
         public void should_return_no_percentiles_if_there_is_not_enough_data()
         {
-            var builder = new PsquareHistogramAlgorithmBuilder();
+            var builder = new PsquareSinglePercentileAlgorithmBuilder(50);
 
             var percentiles = builder.GetPercentiles().ToList();
 
@@ -167,7 +149,7 @@ namespace LivePercentiles.Tests.StreamingBuilders
         {
             // TODO
 //            var random = new Random();
-//            var builder = new PsquareHistogramAlgorithmBuilder();
+//            var builder = new PsquareSinglePercentileAlgorithmBuilder();
 //            for (long i = 0; i < int.MaxValue + 1L; ++i)
 //                builder.AddValue(random.NextDouble() * 100);
 //

@@ -17,6 +17,8 @@ namespace LivePercentiles.StreamingBuilders
         protected readonly List<double> _startupQueue = new List<double>();
         protected List<Marker> _markers = new List<Marker>();
 
+        protected bool IsInitialized { get { return _isInitialized; } }
+
         public void AddValue(double value)
         {
             ++_observationsCount;

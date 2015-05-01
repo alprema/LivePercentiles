@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="IPercentileBuilder.cs" />
+    <Compile Include="Precision.cs" />
     <Compile Include="StaticBuilders\LinearInterpolationBuilder.cs" />
     <Compile Include="Percentile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -49,6 +49,7 @@
     <Compile Include="Extensions\TestExtensions.cs" />
     <Compile Include="StaticBuilders\NearestRankBuilderTests.cs" />
     <Compile Include="StreamingBuilders\BasePsquareBuilderTests.cs" />
+    <Compile Include="StreamingBuilders\PsquareSinglePercentileAlgorithmBuilderTests.cs" />
     <Compile Include="StreamingBuilders\PsquareHistogramAlgorithmBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticBuilders\LinearInterpolationBuilderTests.cs" />

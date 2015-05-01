@@ -138,7 +138,7 @@ namespace LivePercentiles.Tests.StaticBuilders
             for (var i = 0; i < 9; ++i)
             {
                 var deltaToPercentile = percentiles[i].Value - ((i + 1) * 10);
-                deltaToPercentile.ShouldBeLessThan(0.1);
+                deltaToPercentile.ShouldBeLessThan(0.15);
             }
         }
     }

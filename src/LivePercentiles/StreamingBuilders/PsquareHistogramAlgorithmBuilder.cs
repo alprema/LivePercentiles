@@ -15,15 +15,11 @@ namespace LivePercentiles.StreamingBuilders
     /// footprint.
     /// (cf. http://www.cse.wustl.edu/~jain/papers/ftp/psqr.pdf)
     /// </summary>
-    public class PsquareHistogramAlgorithmBuilder : IPercentileBuilder
+    public class PsquareHistogramAlgorithmBuilder : BasePsquareBuilder, IPercentileBuilder
     {
-        private bool _isInitialized;
-        private long _count;
         private readonly int _bucketCount;
         
         private readonly double[] _desiredPercentiles;
-        private readonly List<double> _startupQueue = new List<double>(); 
-        private List<Marker> _markers = new List<Marker>();
         
         public PsquareHistogramAlgorithmBuilder(int bucketCount = Constants.DefaultBucketCount)
         {
@@ -33,27 +29,12 @@ namespace LivePercentiles.StreamingBuilders
             _desiredPercentiles = Enumerable.Range(1, _bucketCount - 1).Select(i => 100d / _bucketCount * i).ToArray();
         }
 
-        public void AddValue(double value)
+        protected override bool IsReadyForNormalPhase()
         {
-            ++_count;
-
-            if (!_isInitialized)
-                StartupPhase(value);
-            else
-                NormalPhase(value);
+            return _observationsCount >= _desiredPercentiles.Length + 2;
         }
 
-        private void StartupPhase(double value)
-        {
-            _startupQueue.Add(value);
-            if (_count < _desiredPercentiles.Length + 2)
-                return;
-            
-            InitializeMarkers();
-            _isInitialized = true;
-        }
-
-        private void InitializeMarkers()
+        protected override void InitializeMarkers()
         {
             _markers = _startupQueue.OrderBy(x => x).Select((x, i) =>
             {
@@ -65,55 +46,11 @@ namespace LivePercentiles.StreamingBuilders
             }).ToList();
         }
 
-        private void NormalPhase(double value)
-        {
-            var containingBucketIndex = FindContainingBucket(value);
-            IncrementImpactedMarkersPositions(containingBucketIndex + 1);
-            RecomputeNonExtremeMarkersValuesIfNecessary();
-
-            // TODO: Remove after thorough testing
-            if (_count != _markers.Last().Position)
-                throw new InvalidOperationException("That can't be !");
-        }
-
-        private int FindContainingBucket(double value)
-        {
-            if (value < _markers.First().Value)
-            {
-                _markers.First().Value = value;
-                return 0;
-            }
-
-            for (var i = 0; i < _markers.Count - 2; ++i)
-            {
-                if (_markers[i].Value <= value && value < _markers[i + 1].Value)
-                    return i;
-            }
-
-            // TODO: simplify
-            if (_markers[_markers.Count - 2].Value <= value && value <= _markers[_markers.Count - 1].Value)
-                return _markers.Count - 2;
-
-            if (value > _markers.Last().Value)
-            {
-                _markers.Last().Value = value;
-                return _markers.Count - 2;
-            }
-
-            throw new InvalidOperationException("Should not happen");
-        }
-
-        private void IncrementImpactedMarkersPositions(int firstImpactedBucketIndex)
-        {
-            for (var i = firstImpactedBucketIndex; i < _markers.Count; i++)
-                _markers[i].IncrementPosition();
-        }
-
-        private void RecomputeNonExtremeMarkersValuesIfNecessary()
+        protected override void RecomputeNonExtremeMarkersValuesIfNecessary()
         {
             for (var i = 1; i < _markers.Count - 1; ++i)
             {
-                var desiredPosition = 1 + i * (_count - 1.0) / _bucketCount;
+                var desiredPosition = 1 + i * (_observationsCount - 1.0) / _bucketCount;
 
                 var deltaToDesiredPosition = desiredPosition - _markers[i].Position;
                 var deltaToNextMarker = _markers[i + 1].Position - _markers[i].Position;
@@ -132,54 +69,9 @@ namespace LivePercentiles.StreamingBuilders
             }
         }
 
-        internal static double ComputePsquareValueForMarker(Marker previousMarker, Marker currentMarker, Marker nextMarker, int markerShift)
-        {
-            var ratioBetweenPreviousAndNextPosition = (double)markerShift / (nextMarker.Position - previousMarker.Position);
-            var distanceBetweenPreviousAndNewPosition = currentMarker.Position - previousMarker.Position + markerShift;
-            var differenceBetweenNextAndCurrentValue = nextMarker.Value - currentMarker.Value;
-            var differenceBetweenNextAndCurrentPosition = nextMarker.Position - currentMarker.Position;
-            var distanceBetweenNextAndNewPosition = nextMarker.Position - currentMarker.Position - markerShift;
-            var differenceBetweenPreviousAndCurrentValue = currentMarker.Value - previousMarker.Value;
-            var differenceBetweenPreviousAndCurrentPosition = currentMarker.Position - previousMarker.Position;
-
-            return currentMarker.Value
-                   + ratioBetweenPreviousAndNextPosition
-                   * (distanceBetweenPreviousAndNewPosition * (differenceBetweenNextAndCurrentValue / differenceBetweenNextAndCurrentPosition)
-                      + distanceBetweenNextAndNewPosition * (differenceBetweenPreviousAndCurrentValue / differenceBetweenPreviousAndCurrentPosition));
-
-        }
-
-        private static double ComputeLinearValueForMarker(Marker previousMarker, Marker currentMarker, Marker nextMarker, int markerShift)
-        {
-            var otherMarker = markerShift < 0 ? previousMarker : nextMarker;
-            var differenceBetweenOtherAndCurrentValue = otherMarker.Value - currentMarker.Value;
-            var differenceBetweenOtherAndCurrentPosition = otherMarker.Position - currentMarker.Position;
-
-            return currentMarker.Value + markerShift * (differenceBetweenOtherAndCurrentValue / differenceBetweenOtherAndCurrentPosition);
-        }
-
         public IEnumerable<Percentile> GetPercentiles()
         {
             return _markers.Skip(1).Take(_desiredPercentiles.Length).Select(x => new Percentile(x.Percentile, x.Value));
-        }
-    }
-    
-    internal class Marker
-    {
-        public int Position { get; set; }
-        public double Value { get; set; }
-        public double Percentile { get; set; }
-
-        public void IncrementPosition()
-        {
-            Position = Position + 1;
-        }
-
-        public Marker(int position, double value, double percentile)
-        {
-            Position = position;
-            Value = value;
-            Percentile = percentile;
         }
     }
 }

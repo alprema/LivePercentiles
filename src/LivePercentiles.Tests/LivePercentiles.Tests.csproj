@@ -61,13 +61,22 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="TestData\sample_data_100">
+    <None Include="TestData\random_sample_100">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="TestData\sample_data_1000">
+    <None Include="TestData\random_sample_1000">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="TestData\sample_data_10000">
+    <None Include="TestData\random_sample_10000">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\latency_sample_100">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\latency_sample_1000">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\latency_sample_10000">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -76,11 +85,6 @@
       <Project>{B8A85134-3950-4AFF-B74F-D59BD2E4C807}</Project>
       <Name>LivePercentiles</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestData\sample_data_10000_expected_percentiles.txt" />
-    <Content Include="TestData\sample_data_1000_expected_percentiles.txt" />
-    <Content Include="TestData\sample_data_100_expected_percentiles.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

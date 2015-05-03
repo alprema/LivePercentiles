@@ -58,7 +58,8 @@ namespace LivePercentiles.Tests
             {
                 new Tuple<string, IPercentileBuilder>("Nearest rank", new NearestRankBuilder(desiredPercentiles)),
                 new Tuple<string, IPercentileBuilder>("P² single value (fast)", new CombinedPsquareSinglePercentileAlgorithmBuilder(desiredPercentiles, Precision.LessPreciseAndFaster)),
-                new Tuple<string, IPercentileBuilder>("P² single value (normal)", new CombinedPsquareSinglePercentileAlgorithmBuilder(desiredPercentiles))
+                new Tuple<string, IPercentileBuilder>("P² single value (normal)", new CombinedPsquareSinglePercentileAlgorithmBuilder(desiredPercentiles)),
+                new Tuple<string, IPercentileBuilder>("Hdr histogram)", new HdrHistogramBuilder(int.MaxValue /* Assuming we don't know the data */, 2, desiredPercentiles))
             };
             var nearestRank = builders[0].Item2;
 
@@ -78,6 +79,11 @@ namespace LivePercentiles.Tests
                 var squaredErrors = nearestRank.GetPercentiles().Zip(builder.Item2.GetPercentiles(), (a, b) => Math.Pow(a.Value - b.Value, 2)).ToList();
                 Console.Write(";" + squaredErrors.Average());
             }
+
+            Console.WriteLine("\r\n\r\nData size in bytes: " + sizeof(double) * File.ReadAllLines(sampleFile.Filename).Count());
+            Console.WriteLine("Hdr estimated size: " + ((HdrHistogramBuilder)builders.Last().Item2).GetEstimatedSize());
+            Console.WriteLine("P² (fast) estimated size: 200");
+            Console.WriteLine("P² (normal) estimated size: 270");
         }
     }
 }

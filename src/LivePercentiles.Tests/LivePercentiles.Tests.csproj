@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HdrHistogram.NET">
+      <HintPath>..\..\lib\HdrHistogram.NET.dll</HintPath>
+    </Reference>
     <Reference Include="KellermanSoftware.Compare-NET-Objects">
       <HintPath>..\packages\CompareNETObjects.3.02.0.0\lib\net45\KellermanSoftware.Compare-NET-Objects.dll</HintPath>
     </Reference>
@@ -48,6 +51,7 @@
     <Compile Include="ComparisonTests.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
+    <Compile Include="HdrHistogramBuilder.cs" />
     <Compile Include="StaticBuilders\NearestRankBuilderTests.cs" />
     <Compile Include="StreamingBuilders\BasePsquareBuilderTests.cs" />
     <Compile Include="StreamingBuilders\PsquareSinglePercentileAlgorithmBuilderTests.cs" />

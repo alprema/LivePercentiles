@@ -54,6 +54,7 @@
     <Compile Include="HdrHistogramBuilder.cs" />
     <Compile Include="StaticBuilders\NearestRankBuilderTests.cs" />
     <Compile Include="StreamingBuilders\BasePsquareBuilderTests.cs" />
+    <Compile Include="StreamingBuilders\ConstantErrorBasicCKMSBuilderTests.cs" />
     <Compile Include="StreamingBuilders\PsquareSinglePercentileAlgorithmBuilderTests.cs" />
     <Compile Include="StreamingBuilders\PsquareHistogramAlgorithmBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

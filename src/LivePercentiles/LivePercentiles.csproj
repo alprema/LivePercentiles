@@ -47,6 +47,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticBuilders\NearestRankBuilder.cs" />
     <Compile Include="StreamingBuilders\BasePsquareBuilder.cs" />
+    <Compile Include="StreamingBuilders\ConstantErrorBasicCKMSBuilder.cs" />
     <Compile Include="StreamingBuilders\Marker.cs" />
     <Compile Include="StreamingBuilders\PsquareHistogramAlgorithmBuilder.cs" />
     <Compile Include="StreamingBuilders\PsquareSinglePercentileAlgorithmBuilder.cs" />

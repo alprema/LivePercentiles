@@ -37,8 +37,9 @@ namespace LivePercentiles.StreamingBuilders
                 // TODO: Check this out (should be ri)
                 var previousBucketTrueRankLowerBound = 0;
                 for (var i = 0; i < index; ++i)
-                    previousBucketTrueRankLowerBound += _buckets[i].DistanceToPreviousBucketLowerBound;
-                _buckets.Insert(index, new Bucket(value, 1, (int)Math.Floor(GetAllowableBucketSpread(previousBucketTrueRankLowerBound, _count + 1)) - 1));}
+                    previousBucketTrueRankLowerBound += _buckets[i].Gi;
+                // Not removing 1 from Delta to make it work
+                _buckets.Insert(index, new Bucket(value, 1, (int)Math.Floor(GetAllowableBucketSpread(previousBucketTrueRankLowerBound, _count + 1)) ));}
             ++_count;
         }
 
@@ -66,9 +67,9 @@ namespace LivePercentiles.StreamingBuilders
                 foreach (var currentBucket in _buckets)
                 {
                     if (previous != null)
-                        ri += previous.DistanceToPreviousBucketLowerBound;
+                        ri += previous.Gi;
 
-                    if (ri + currentBucket.DistanceToPreviousBucketLowerBound + currentBucket.Delta > targetIndexAccountingForError)
+                    if (ri + currentBucket.Gi + currentBucket.Delta > targetIndexAccountingForError)
                     {
                         yield return new Percentile(desiredPercentile, (previous ?? currentBucket).ActualValue);
                         break;
@@ -83,22 +84,22 @@ namespace LivePercentiles.StreamingBuilders
     public class Bucket
     {
         public double ActualValue { get; set; }
-        public int DistanceToPreviousBucketLowerBound { get; set; }
+        public int Gi { get; set; }
         /// <summary>
         /// Range of the bucket
         /// </summary>
         public int Delta { get; set; }
 
-        public Bucket(double actualValue, int distanceToPreviousBucketLowerBound, int delta)
+        public Bucket(double actualValue, int gi, int delta)
         {
             ActualValue = actualValue;
-            DistanceToPreviousBucketLowerBound = distanceToPreviousBucketLowerBound;
+            Gi = gi;
             Delta = delta;
         }
 
         public override string ToString()
         {
-            return "ActualValue: " + ActualValue + ", DistanceToPreviousLowerBound: " + DistanceToPreviousBucketLowerBound + ", Delta: " + Delta;
+            return "ActualValue: " + ActualValue + ", Gi: " + Gi + ", Delta: " + Delta;
         }
     }
 }

@@ -45,6 +45,24 @@ namespace LivePercentiles.Tests.StreamingBuilders
             },
             new Expectation
             {
+                Note = "Repeated data",
+                DesiredPercentiles = Constants.DefaultPercentiles,
+                Values = new double[] { 2, 7, 1, 10, 10, 10, 10, 10, 8, 9, 3, 4, 5, 6 },
+                ExpectedPercentiles = new[]
+                {
+                    new Percentile(10, 2),
+                    new Percentile(20, 3),
+                    new Percentile(30, 5),
+                    new Percentile(40, 6),
+                    new Percentile(50, 7),
+                    new Percentile(60, 9),
+                    new Percentile(70, 10),
+                    new Percentile(80, 10),
+                    new Percentile(90, 10)
+                }
+            },
+            new Expectation
+            {
                 Note = "Negative percentile",
                 DesiredPercentiles = new double[] { -5 },
                 Values = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
@@ -85,6 +103,7 @@ namespace LivePercentiles.Tests.StreamingBuilders
 
         [Test]
         [TestCaseSource("_testExpectations")]
+        [Repeat(10)]
         public void should_return_percentiles_for_given_data(Expectation expectation)
         {
             var builder = new ConstantErrorBasicCKMSBuilder(0.00000001, expectation.DesiredPercentiles);
@@ -97,7 +116,7 @@ namespace LivePercentiles.Tests.StreamingBuilders
         }
 
         [Test]
-        public void should_handle_hard_case()
+        public void  should_handle_hard_case()
         {
             var values = new double[] { 2, 7, 1, 10, 8, 9, 3, 4, 5, 6 };
             var expectedPercentiles = new[]
@@ -127,9 +146,9 @@ namespace LivePercentiles.Tests.StreamingBuilders
         {
             var random = new Random();
             var desiredPercentiles = new double[] { 10, 20, 30, 40, 50, 60, 70, 80, 90 };
-            var builder = new ConstantErrorBasicCKMSBuilder(0.00000001, desiredPercentiles);
+            var builder = new ConstantErrorBasicCKMSBuilder(0.00001, desiredPercentiles);
             var referenceBuilder = new NearestRankBuilder(desiredPercentiles);
-            for (var i = 0; i < 1000; ++i)
+            for (var i = 0; i < 10000; ++i)
             {
                 var value = random.NextDouble() * 100;
                 builder.AddValue(value);
@@ -150,18 +169,5 @@ namespace LivePercentiles.Tests.StreamingBuilders
             }
             Console.WriteLine("MSE: " + squaredErrors.Average());
         }
-
-        [Test]
-        public void should_handle_repetition()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Test]
-        public void should_delta_be_negative()
-        {
-            throw new NotImplementedException();
-        }
     }
-
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using LivePercentiles.StaticBuilders;
 using LivePercentiles.StreamingBuilders;
@@ -140,6 +142,31 @@ namespace LivePercentiles.Tests.StreamingBuilders
 
             percentiles.ShouldBeEquivalentTo(expectedPercentiles, true);
         }
+        
+        [Test]
+        public void should_handle_simple_range()
+        {
+            var expectedPercentiles = new[]
+            {
+                new Percentile(10, 10),
+                new Percentile(20, 20),
+                new Percentile(30, 30),
+                new Percentile(40, 40),
+                new Percentile(50, 50),
+                new Percentile(60, 60),
+                new Percentile(70, 70),
+                new Percentile(80, 80),
+                new Percentile(90, 90)
+
+            };
+            var builder = new ConstantErrorBasicCKMSBuilder(0.001, Constants.DefaultPercentiles);
+            foreach (var i in Enumerable.Range(1, 100).Shuffle())
+                builder.AddValue(i);
+
+            var percentiles = builder.GetPercentiles().ToList();
+
+            percentiles.ShouldBeEquivalentTo(expectedPercentiles, true);
+        }
 
         [Test]
         public void should_work_with_random_uniform_distribution()
@@ -168,6 +195,36 @@ namespace LivePercentiles.Tests.StreamingBuilders
                 squaredErrors.Add(Math.Pow(deltaToPercentile, 2));
             }
             Console.WriteLine("MSE: " + squaredErrors.Average());
+        }
+
+        public class SampleFile
+        {
+            public string Filename { get; set; }
+            public int[] ExpectedValues { get; set; }
+
+            public override string ToString() { return Filename; }
+        }
+
+        private SampleFile[] _sampleFiles =
+        {
+            new SampleFile { Filename = "TestData/latency_sample_100", ExpectedValues = new[] { 73, 80, 125, 269, 269, 269 } },
+            new SampleFile { Filename = "TestData/latency_sample_1000", ExpectedValues = new[] { 75, 82, 183, 320, 659, 659 } },
+            new SampleFile { Filename = "TestData/latency_sample_10000", ExpectedValues = new[] { 75, 82, 177, 342, 551, 603 } }
+        };
+
+        [Test]
+        [TestCaseSource("_sampleFiles")]
+        public void should_work_with_sample_data(SampleFile sampleFile)
+        {
+            var builder = new ConstantErrorBasicCKMSBuilder(0.000000000000000001, new[] { 80, 90, 99, 99.9, 99.99, 99.999 });
+
+            foreach (var line in File.ReadAllLines(sampleFile.Filename))
+            {
+                var value = double.Parse(line, CultureInfo.InvariantCulture);
+                builder.AddValue(value);
+            }
+
+            builder.GetPercentiles().Select(p => (int)p.Value).ShouldBeEquivalentTo(sampleFile.ExpectedValues);
         }
     }
 }
